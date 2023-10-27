@@ -12,8 +12,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # Fast SLAM covariance
-Q = np.diag([3.0, np.deg2rad(10.0)]) ** 2
-R = np.diag([1.0, np.deg2rad(20.0)]) ** 2
+Q = np.diag([3.0, np.deg2rad(10.0)]) ** 2 # weighting matrix of cost fn. Diag matrix with 3, and 10deg as rad in diagonals
+R = np.diag([1.0, np.deg2rad(20.0)]) ** 2 
 
 #  Simulation parameter
 Q_sim = np.diag([0.3, np.deg2rad(2.0)]) ** 2
@@ -88,11 +88,11 @@ def calc_final_state(particles):
 
 def predict_particles(particles, u):
     for i in range(N_PARTICLE):
-        px = np.zeros((STATE_SIZE, 1))
+        px = np.zeros((STATE_SIZE, 1)) # px is 3 x 1
         px[0, 0] = particles[i].x
         px[1, 0] = particles[i].y
         px[2, 0] = particles[i].yaw
-        ud = u + (np.random.randn(1, 2) @ R ** 0.5).T  # add noise
+        ud = u + (np.random.randn(1, 2) @ R ** 0.5).T  # add noise, 2x1 
         px = motion_model(px, ud)
         particles[i].x = px[0, 0]
         particles[i].y = px[1, 0]
@@ -290,6 +290,7 @@ def observation(xTrue, xd, u, rfid):
             dn = d + np.random.randn() * Q_sim[0, 0] ** 0.5  # add noise
             angle_with_noize = angle + np.random.randn() * Q_sim[
                 1, 1] ** 0.5  # add noise
+            # Z ends up having 3 rows and 5 columns
             zi = np.array([dn, pi_2_pi(angle_with_noize), i]).reshape(3, 1)
             z = np.hstack((z, zi))
 
@@ -313,7 +314,7 @@ def motion_model(x, u):
                   [DT * math.sin(x[2, 0]), 0],
                   [0.0, DT]])
 
-    x = F @ x + B @ u
+    x = F @ x + B @ u # x (3,1), F(3,3), B(3,2), and U(2,1)
 
     x[2, 0] = pi_2_pi(x[2, 0])
 
@@ -355,8 +356,8 @@ def main():
 
     while SIM_TIME >= time:
         time += DT
-        u = calc_input(time)
-
+        u = calc_input(time) # u is (2,1)
+        # Z (3,5), xTrue(3, 1), xDR (3, 1), ud (2, 1)
         xTrue, z, xDR, ud = observation(xTrue, xDR, u, RFID)
 
         particles = fast_slam1(particles, ud, z)

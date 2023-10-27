@@ -8,6 +8,8 @@ import math
 
 import matplotlib.pyplot as plt
 import numpy as np
+from cProfile import Profile
+from pstats import SortKey, Stats
 
 # EKF state covariance
 Cx = np.diag([0.5, 0.5, np.deg2rad(30.0)]) ** 2
@@ -258,6 +260,15 @@ def main():
             plt.grid(True)
             plt.pause(0.001)
 
-
-if __name__ == '__main__':
+with Profile() as profile: 
+    print('Profiling now')
     main()
+    (
+        Stats(profile)
+        .strip_dirs()
+        .sort_stats(SortKey.CALLS)
+        .print_stats()
+    )
+
+#if __name__ == '__main__':
+ #   main()
